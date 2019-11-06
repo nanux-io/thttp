@@ -1,0 +1,12 @@
+version: '3.7'
+
+services:
+  go:
+    build: 
+      dockerfile: ./Dockerfile
+      context: .
+    command: bash
+    tty: true
+    volumes:
+      - ../:/home/go
+      - ./.go:/go

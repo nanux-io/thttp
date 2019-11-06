@@ -1,0 +1,24 @@
+mode: set
+github.com/nanux-io/thttp/thttp.go:24.41,25.52 1 1
+github.com/nanux-io/thttp/thttp.go:82.2,82.39 1 1
+github.com/nanux-io/thttp/thttp.go:25.52,34.18 5 1
+github.com/nanux-io/thttp/thttp.go:41.3,51.17 3 1
+github.com/nanux-io/thttp/thttp.go:74.3,74.18 1 1
+github.com/nanux-io/thttp/thttp.go:78.3,79.9 2 1
+github.com/nanux-io/thttp/thttp.go:34.18,38.4 3 1
+github.com/nanux-io/thttp/thttp.go:51.17,52.27 1 1
+github.com/nanux-io/thttp/thttp.go:58.4,62.19 2 1
+github.com/nanux-io/thttp/thttp.go:67.4,69.10 2 1
+github.com/nanux-io/thttp/thttp.go:52.27,56.5 3 1
+github.com/nanux-io/thttp/thttp.go:62.19,65.5 2 1
+github.com/nanux-io/thttp/thttp.go:74.18,76.4 1 1
+github.com/nanux-io/thttp/thttp.go:86.43,87.43 1 1
+github.com/nanux-io/thttp/thttp.go:91.2,91.8 1 1
+github.com/nanux-io/thttp/thttp.go:87.43,89.3 1 0
+github.com/nanux-io/thttp/thttp.go:95.75,96.45 1 1
+github.com/nanux-io/thttp/thttp.go:103.2,105.12 2 1
+github.com/nanux-io/thttp/thttp.go:96.45,101.3 3 1
+github.com/nanux-io/thttp/thttp.go:109.78,110.25 1 1
+github.com/nanux-io/thttp/thttp.go:117.2,118.12 2 1
+github.com/nanux-io/thttp/thttp.go:110.25,115.3 3 1
+github.com/nanux-io/thttp/thttp.go:126.34,132.2 1 1
