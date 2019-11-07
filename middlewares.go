@@ -1,8 +1,6 @@
 package thttp
 
 import (
-	"errors"
-
 	"github.com/nanux-io/nanux"
 )
 
@@ -12,10 +10,10 @@ import (
 // answering these requests
 func OKOptions(fn nanux.HandlerFunc) nanux.HandlerFunc {
 	return func(ctx *interface{}, req nanux.Request) ([]byte, error) {
-		httpCtx, ok := GetHTTPCtx(req)
+		httpCtx, err := GetHTTPCtx(req)
 
-		if ok == false {
-			return nil, errors.New("Internal server error")
+		if err != nil {
+			return nil, err
 		}
 
 		if httpCtx.IsOptions() == true {

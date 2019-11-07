@@ -37,9 +37,9 @@ handler := nanux.Handler{
     // httpCtxI is an interface corresponding to a `*fasthttp.RequestCtx`
     httpCtxI := req.M["httpCtx"] 
 
-    // httpCtx is an instance of `*fasthttp.RequestCtx` if `ok` is `true`
+    // httpCtx is an instance of `*fasthttp.RequestCtx` if there was no error
     // otherwise it is nil
-    httpCtx, ok := thttp.GetHTTPCtx(req)
+    httpCtx, err := thttp.GetHTTPCtx(req)
   }
 }
 ```

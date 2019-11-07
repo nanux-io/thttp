@@ -77,8 +77,6 @@
 		<pre class="file" id="file0" style="display: none">package thttp
 
 import (
-        "errors"
-
         "github.com/nanux-io/nanux"
 )
 
@@ -88,10 +86,10 @@ import (
 // answering these requests
 func OKOptions(fn nanux.HandlerFunc) nanux.HandlerFunc <span class="cov8" title="1">{
         return func(ctx *interface{}, req nanux.Request) ([]byte, error) </span><span class="cov8" title="1">{
-                httpCtx, ok := GetHTTPCtx(req)
+                httpCtx, err := GetHTTPCtx(req)
 
-                if ok == false </span><span class="cov0" title="0">{
-                        return nil, errors.New("Internal server error")
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, err
                 }</span>
 
                 <span class="cov8" title="1">if httpCtx.IsOptions() == true </span><span class="cov8" title="1">{
@@ -338,11 +336,15 @@ func (t *Transporter) Run() (err error) <span class="cov8" title="1">{
                 return</span>
         }
 
-        <span class="cov8" title="1">return t.Server.ListenAndServe(t.url)</span>
+        <span class="cov8" title="1">log.Info().Msgf("Start listening incoming http request at %s", t.url)
+
+        return t.Server.ListenAndServe(t.url)</span>
 }
 
 // Close the http server
 func (t *Transporter) Close() (err error) <span class="cov8" title="1">{
+        log.Info().Msgf("Http server stop serving current request and stop listening at %s", t.url)
+
         if err = t.Server.Shutdown(); err != nil </span><span class="cov0" title="0">{
                 return err
         }</span>
@@ -396,6 +398,7 @@ func (t *Transporter) HandleError(errHandler nanux.ErrorHandler) (err error) <sp
         }</span>
 
         <span class="cov8" title="1">t.errHandler = errHandler
+
         return nil</span>
 }
 
@@ -419,18 +422,21 @@ func New(url string, okOptions bool) Transporter <span class="cov8" title="1">{
 		<pre class="file" id="file3" style="display: none">package thttp
 
 import (
+        "errors"
+
         "github.com/nanux-io/nanux"
         "github.com/rs/zerolog/log"
         "github.com/valyala/fasthttp"
 )
 
 // GetHTTPCtx return the fasthttp request context extract from the nanux request
-func GetHTTPCtx(req nanux.Request) (httpCtx *fasthttp.RequestCtx, ok bool) <span class="cov8" title="1">{
+func GetHTTPCtx(req nanux.Request) (httpCtx *fasthttp.RequestCtx, err error) <span class="cov8" title="1">{
         httpCtxI, ok := req.M["httpCtx"]
 
         if ok == false </span><span class="cov8" title="1">{
                 log.Error().Msg("GetHTTPCtx : could not extract http context from request")
-                return
+
+                return nil, errors.New("Internal server error")
         }</span>
 
         <span class="cov8" title="1">httpCtx, ok = httpCtxI.(*fasthttp.RequestCtx)
@@ -438,7 +444,7 @@ func GetHTTPCtx(req nanux.Request) (httpCtx *fasthttp.RequestCtx, ok bool) <span
         if ok == false </span><span class="cov8" title="1">{
                 log.Error().Msg("GetHTTPCtx : could not convert http context to *fasthttp.RequestCtx")
 
-                return
+                return nil, errors.New("Internal server error")
         }</span>
 
         <span class="cov8" title="1">return</span>
