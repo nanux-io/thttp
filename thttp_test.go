@@ -19,7 +19,7 @@ var _ = Describe("tHTTP transporter", func() {
 	url := "127.0.0.1:1234"
 
 	It("should create a new instance", func() {
-		t := New(url)
+		t := New(url, false)
 
 		var i interface{} = &t
 		_, ok := i.(nanux.Transporter)
@@ -28,11 +28,12 @@ var _ = Describe("tHTTP transporter", func() {
 
 	Context("instance", func() {
 		var (
-			t Transporter
+			t         Transporter
+			okOptions bool
 		)
 
 		JustBeforeEach(func() {
-			t = New(url)
+			t = New(url, okOptions)
 		})
 
 		It("should launch an http server on the specified url and close", func(done Done) {
@@ -42,7 +43,6 @@ var _ = Describe("tHTTP transporter", func() {
 			time.Sleep(50 * time.Millisecond)
 
 			resp, err := httpClient.Get("http://" + url)
-
 			Expect(err).ToNot(HaveOccurred())
 			Expect(resp.StatusCode).To(Equal(404))
 
@@ -68,11 +68,32 @@ var _ = Describe("tHTTP transporter", func() {
 		})
 
 		Context("running", func() {
+			methodGetOpt := nanux.HandlerOpts{MethodsOpt: Methods{Get: true}}
+
 			JustBeforeEach(func() {
 				go t.Run()
 
 				// wait to let time to the server to be launcher
 				time.Sleep(50 * time.Millisecond)
+			})
+
+			Context("with ok options", func() {
+				BeforeEach(func() {
+					okOptions = true
+				})
+
+				It("should respond with 200 for all OPTIONS requests", func() {
+					req, err := http.NewRequest(http.MethodOptions, "http://"+url, nil)
+					Expect(err).ToNot(HaveOccurred())
+
+					res, err := httpClient.Do(req)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(res.StatusCode).To(Equal(200))
+
+					body, err := readResponseBody(res)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(body).To(Equal(""))
+				})
 			})
 
 			It("should raise an error if try to run an already running instance", func(done Done) {
@@ -92,6 +113,7 @@ var _ = Describe("tHTTP transporter", func() {
 					Fn: func(nanux.Request) ([]byte, error) {
 						return nil, nil
 					},
+					Opts: methodGetOpt,
 				}
 
 				It("should be added the first time and rising an error the second time for the same route", func() {
@@ -104,6 +126,28 @@ var _ = Describe("tHTTP transporter", func() {
 					Expect(err).To(HaveOccurred())
 				})
 
+				It("should fail if the method option is not set in the options of the handler", func() {
+					tHandlerWithoutOpt := nanux.THandler{
+						Fn: func(nanux.Request) ([]byte, error) {
+							return nil, nil
+						},
+						Opts: nanux.HandlerOpts{MethodsOpt: "wrong type"},
+					}
+
+					err := t.Handle("routewithoutopt", tHandlerWithoutOpt)
+					Expect(err).To(HaveOccurred())
+				})
+
+				It("should fail if the method option is wrong type in the options of the handler", func() {
+					tHandlerWithoutOpt := nanux.THandler{
+						Fn: func(nanux.Request) ([]byte, error) {
+							return nil, nil
+						},
+					}
+
+					err := t.Handle("routewithoutopt", tHandlerWithoutOpt)
+					Expect(err).To(HaveOccurred())
+				})
 			})
 
 			It("should inject fasthttp context into Request.M of handler", func(done Done) {
@@ -122,6 +166,7 @@ var _ = Describe("tHTTP transporter", func() {
 						}
 
 						_, ok = httpCtx.(*fasthttp.RequestCtx)
+
 						if ok == false {
 							c <- false
 						}
@@ -130,6 +175,7 @@ var _ = Describe("tHTTP transporter", func() {
 
 						return nil, nil
 					},
+					Opts: methodGetOpt,
 				}
 
 				err := t.Handle(route, tHandler)
@@ -148,6 +194,7 @@ var _ = Describe("tHTTP transporter", func() {
 					Fn: func(req nanux.Request) ([]byte, error) {
 						return []byte(handlerMsg), nil
 					},
+					Opts: methodGetOpt,
 				}
 
 				err := t.Handle(route, tHandler)
@@ -159,6 +206,30 @@ var _ = Describe("tHTTP transporter", func() {
 				body, _ := readResponseBody(resp)
 				Expect(resp.StatusCode).To(Equal(200))
 				Expect(body).To(Equal(handlerMsg))
+			})
+
+			It("should only respond to methods (GET, DELETE) set into the options of the handler", func() {
+				route := "/myroute"
+				tHandler := nanux.THandler{
+					Fn: func(req nanux.Request) ([]byte, error) {
+						return nil, nil
+					},
+					Opts: nanux.HandlerOpts{MethodsOpt: Methods{Get: true, Delete: true}},
+				}
+
+				err := t.Handle(route, tHandler)
+				Expect(err).ToNot(HaveOccurred())
+
+				resp, err := httpClient.Get("http://" + url + route)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(resp.StatusCode).To(Equal(200))
+
+				req, err := http.NewRequest(http.MethodDelete, "http://"+url+route, nil)
+				Expect(err).ToNot(HaveOccurred())
+				resp, err = httpClient.Do(req)
+
+				Expect(err).ToNot(HaveOccurred())
+				Expect(resp.StatusCode).To(Equal(200))
 			})
 
 			It("should allow to add errorHandler only once", func() {
@@ -185,6 +256,7 @@ var _ = Describe("tHTTP transporter", func() {
 						Fn: func(nanux.Request) ([]byte, error) {
 							return nil, errors.New(handlerErrMsg)
 						},
+						Opts: methodGetOpt,
 					}
 
 					err := t.Handle(route, tHandler)
@@ -261,9 +333,12 @@ var _ = Describe("tHTTP transporter", func() {
 
 func readResponseBody(resp *http.Response) (body string, err error) {
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
+
 	if err != nil {
 		return
 	}
+
 	body = string(bodyBytes)
+
 	return
 }

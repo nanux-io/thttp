@@ -2,7 +2,7 @@ module github.com/nanux-io/thttp
 
 require (
 	github.com/klauspost/compress v1.9.1 // indirect
-	github.com/nanux-io/nanux v0.0.0-20191106134618-5c7fa830454b
+	github.com/nanux-io/nanux v0.0.0-20191107140937-b47d3271034d
 	github.com/onsi/ginkgo v1.10.3
 	github.com/onsi/gomega v1.7.1
 	github.com/rs/zerolog v1.16.0

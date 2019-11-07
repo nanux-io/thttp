@@ -2,11 +2,17 @@ package thttp
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/nanux-io/nanux"
 	"github.com/rs/zerolog/log"
 	"github.com/valyala/fasthttp"
 )
+
+type httpRoute struct {
+	route  string
+	method string
+}
 
 // Transporter define a tnng instance of transporter which resolve the `Transporter`
 // interface from nanux transporter package
@@ -15,9 +21,10 @@ type Transporter struct {
 	url    string
 	Server *fasthttp.Server
 
-	tHandlers  map[string]nanux.THandler
-	errHandler nanux.ErrorHandler
-	closeChan  chan bool
+	okOptions     bool
+	routeHandlers map[httpRoute]nanux.THandler
+	errHandler    nanux.ErrorHandler
+	closeChan     chan bool
 }
 
 // Run start the http server and make it listens on the transporter's url
@@ -25,10 +32,24 @@ func (t *Transporter) Run() (err error) {
 	t.Server.Handler = func(ctx *fasthttp.RequestCtx) {
 		var resp []byte
 		var err error
+		method := string(ctx.Method())
 
-		log.Debug().Msgf("Receive request for path: %s", ctx.Path())
+		log.Debug().Msgf("Receive request for path: %s and method : %s", ctx.Path(), ctx.Method())
 
-		tHandler, ok := t.tHandlers[string(ctx.Path())]
+		// if option okOptions is set on the transporter then respond 200 to all
+		// option request
+		if t.okOptions == true && method == fasthttp.MethodOptions {
+			ctx.SetStatusCode(200)
+			ctx.SetConnectionClose()
+			return
+		}
+
+		key := httpRoute{
+			route:  string(ctx.Path()),
+			method: method,
+		}
+
+		tHandler, ok := t.routeHandlers[key]
 
 		// if handler not found for path then response with status code 404 is sent
 		if ok == false {
@@ -93,14 +114,36 @@ func (t *Transporter) Close() (err error) {
 
 // Handle add handler for specified route
 func (t *Transporter) Handle(route string, tHandler nanux.THandler) error {
-	if _, ok := t.tHandlers[route]; ok == true {
-		errMsg := "An handler is already associated to this route"
+	methodsI, ok := tHandler.Opts[MethodsOpt]
+
+	if ok == false {
+		errMsg := fmt.Sprintf("Missing http method for route : %s", route)
 		log.Error().Msg(errMsg)
 
 		return errors.New(errMsg)
 	}
 
-	t.tHandlers[route] = tHandler
+	methods, ok := methodsI.(Methods)
+
+	if ok == false {
+		errMsg := "Option associated to thttp.MethodsOpt is not of type thttp.Methods"
+		log.Error().Msg(errMsg)
+
+		return errors.New(errMsg)
+	}
+
+	httpRoutes := methods.getHTTPRoutes(route)
+
+	for _, httpRoute := range httpRoutes {
+		if _, ok := t.routeHandlers[httpRoute]; ok == true {
+			errMsg := "An handler is already associated to this route"
+			log.Error().Msg(errMsg)
+
+			return errors.New(errMsg)
+		}
+
+		t.routeHandlers[httpRoute] = tHandler
+	}
 
 	return nil
 }
@@ -122,11 +165,14 @@ func (t *Transporter) HandleError(errHandler nanux.ErrorHandler) (err error) {
   Instantiation of tHTTP transporter
 \*----------------------------------------------------------------------------*/
 
-// New returns a new instance of http transporter which will listen to the specified url
-func New(url string) Transporter {
+// New returns a new instance of http transporter which will listen to the specified url.
+// The param okOption is a little helper to tell the transporter to respond ok to all
+// options.
+func New(url string, okOptions bool) Transporter {
 	return Transporter{
-		url:       url,
-		Server:    &fasthttp.Server{},
-		tHandlers: make(map[string]nanux.THandler),
+		url:           url,
+		Server:        &fasthttp.Server{},
+		routeHandlers: make(map[httpRoute]nanux.THandler),
+		okOptions:     okOptions,
 	}
 }

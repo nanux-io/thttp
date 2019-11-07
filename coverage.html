@@ -54,7 +54,13 @@
 			<div id="nav">
 				<select id="files">
 				
-				<option value="file0">github.com/nanux-io/thttp/thttp.go (97.7%)</option>
+				<option value="file0">github.com/nanux-io/thttp/middlewares.go (85.7%)</option>
+				
+				<option value="file1">github.com/nanux-io/thttp/options.go (100.0%)</option>
+				
+				<option value="file2">github.com/nanux-io/thttp/thttp.go (98.4%)</option>
+				
+				<option value="file3">github.com/nanux-io/thttp/utils.go (100.0%)</option>
 				
 				</select>
 			</div>
@@ -74,9 +80,177 @@ import (
         "errors"
 
         "github.com/nanux-io/nanux"
+)
+
+// OKOptions respond to the request with an empty body and status code 200
+// to options request. Because several libs (in different language) make options
+// request before doing the "real" request, this middleware is here to help
+// answering these requests
+func OKOptions(fn nanux.HandlerFunc) nanux.HandlerFunc <span class="cov8" title="1">{
+        return func(ctx *interface{}, req nanux.Request) ([]byte, error) </span><span class="cov8" title="1">{
+                httpCtx, ok := GetHTTPCtx(req)
+
+                if ok == false </span><span class="cov0" title="0">{
+                        return nil, errors.New("Internal server error")
+                }</span>
+
+                <span class="cov8" title="1">if httpCtx.IsOptions() == true </span><span class="cov8" title="1">{
+                        return nil, nil
+                }</span>
+
+                <span class="cov8" title="1">return fn(ctx, req)</span>
+        }
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package thttp
+
+import (
+        "github.com/nanux-io/nanux"
+        "github.com/valyala/fasthttp"
+)
+
+const (
+        // MethodsOpt define the handler option key for specifying http method associated
+        // to the handler. The value associated to this option come from the http
+        // package of the std lib (eg http.MethodGet)
+        MethodsOpt nanux.HandlerOptName = "httpMethod"
+)
+
+// Methods define available methods for handler
+type Methods struct {
+        Get     bool
+        Post    bool
+        Put     bool
+        Patch   bool
+        Delete  bool
+        Options bool
+        Head    bool
+        All     bool
+}
+
+func (m Methods) getHTTPRoutes(route string) (httpRoutes []httpRoute) <span class="cov8" title="1">{
+        if m.All == true </span><span class="cov8" title="1">{
+                m.Get = true
+                m.Post = true
+                m.Put = true
+                m.Patch = true
+                m.Delete = true
+                m.Options = true
+                m.Head = true
+        }</span>
+
+        <span class="cov8" title="1">if m.Get == true </span><span class="cov8" title="1">{
+                httpRoutes = append(httpRoutes, httpRoute{route: route, method: fasthttp.MethodGet})
+        }</span>
+
+        <span class="cov8" title="1">if m.Post == true </span><span class="cov8" title="1">{
+                httpRoutes = append(httpRoutes, httpRoute{route: route, method: fasthttp.MethodPost})
+        }</span>
+
+        <span class="cov8" title="1">if m.Put == true </span><span class="cov8" title="1">{
+                httpRoutes = append(httpRoutes, httpRoute{route: route, method: fasthttp.MethodPut})
+        }</span>
+
+        <span class="cov8" title="1">if m.Patch == true </span><span class="cov8" title="1">{
+                httpRoutes = append(httpRoutes, httpRoute{route: route, method: fasthttp.MethodPatch})
+        }</span>
+
+        <span class="cov8" title="1">if m.Delete == true </span><span class="cov8" title="1">{
+                httpRoutes = append(httpRoutes, httpRoute{route: route, method: fasthttp.MethodDelete})
+        }</span>
+
+        <span class="cov8" title="1">if m.Head == true </span><span class="cov8" title="1">{
+                httpRoutes = append(httpRoutes, httpRoute{route: route, method: fasthttp.MethodHead})
+        }</span>
+
+        <span class="cov8" title="1">if m.Options == true </span><span class="cov8" title="1">{
+                httpRoutes = append(httpRoutes, httpRoute{route: route, method: fasthttp.MethodOptions})
+        }</span>
+
+        <span class="cov8" title="1">return</span>
+}
+
+// GET return a handler for the specified handle func which will respond to GET request
+func GET(fn nanux.HandlerFunc) nanux.Handler <span class="cov8" title="1">{
+        return nanux.Handler{
+                Fn:   fn,
+                Opts: nanux.HandlerOpts{MethodsOpt: Methods{Get: true}},
+        }
+}</span>
+
+// POST return a handler for the specified handle func which will respond to POST request
+func POST(fn nanux.HandlerFunc) nanux.Handler <span class="cov8" title="1">{
+        return nanux.Handler{
+                Fn:   fn,
+                Opts: nanux.HandlerOpts{MethodsOpt: Methods{Post: true}},
+        }
+}</span>
+
+// PUT return a handler for the specified handle func which will respond to Put request
+func PUT(fn nanux.HandlerFunc) nanux.Handler <span class="cov8" title="1">{
+        return nanux.Handler{
+                Fn:   fn,
+                Opts: nanux.HandlerOpts{MethodsOpt: Methods{Put: true}},
+        }
+}</span>
+
+// PATCH return a handler for the specified handle func which will respond to PATCH request
+func PATCH(fn nanux.HandlerFunc) nanux.Handler <span class="cov8" title="1">{
+        return nanux.Handler{
+                Fn:   fn,
+                Opts: nanux.HandlerOpts{MethodsOpt: Methods{Patch: true}},
+        }
+}</span>
+
+// DELETE return a handler for the specified handle func which will respond to DELETE request
+func DELETE(fn nanux.HandlerFunc) nanux.Handler <span class="cov8" title="1">{
+        return nanux.Handler{
+                Fn:   fn,
+                Opts: nanux.HandlerOpts{MethodsOpt: Methods{Delete: true}},
+        }
+}</span>
+
+// HEAD return a handler for the specified handle func which will respond to HEAD request
+func HEAD(fn nanux.HandlerFunc) nanux.Handler <span class="cov8" title="1">{
+        return nanux.Handler{
+                Fn:   fn,
+                Opts: nanux.HandlerOpts{MethodsOpt: Methods{Head: true}},
+        }
+}</span>
+
+// OPTIONS return a handler for the specified handle func which will respond to OPTIONS request
+func OPTIONS(fn nanux.HandlerFunc) nanux.Handler <span class="cov8" title="1">{
+        return nanux.Handler{
+                Fn:   fn,
+                Opts: nanux.HandlerOpts{MethodsOpt: Methods{Options: true}},
+        }
+}</span>
+
+// ALL return a handler for the specified handle func which will respond to all request verb
+func ALL(fn nanux.HandlerFunc) nanux.Handler <span class="cov8" title="1">{
+        return nanux.Handler{
+                Fn:   fn,
+                Opts: nanux.HandlerOpts{MethodsOpt: Methods{All: true}},
+        }
+}</span>
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package thttp
+
+import (
+        "errors"
+        "fmt"
+
+        "github.com/nanux-io/nanux"
         "github.com/rs/zerolog/log"
         "github.com/valyala/fasthttp"
 )
+
+type httpRoute struct {
+        route  string
+        method string
+}
 
 // Transporter define a tnng instance of transporter which resolve the `Transporter`
 // interface from nanux transporter package
@@ -85,9 +259,10 @@ type Transporter struct {
         url    string
         Server *fasthttp.Server
 
-        tHandlers  map[string]nanux.THandler
-        errHandler nanux.ErrorHandler
-        closeChan  chan bool
+        okOptions     bool
+        routeHandlers map[httpRoute]nanux.THandler
+        errHandler    nanux.ErrorHandler
+        closeChan     chan bool
 }
 
 // Run start the http server and make it listens on the transporter's url
@@ -95,10 +270,24 @@ func (t *Transporter) Run() (err error) <span class="cov8" title="1">{
         t.Server.Handler = func(ctx *fasthttp.RequestCtx) </span><span class="cov8" title="1">{
                 var resp []byte
                 var err error
+                method := string(ctx.Method())
 
-                log.Debug().Msgf("Receive request for path: %s", ctx.Path())
+                log.Debug().Msgf("Receive request for path: %s and method : %s", ctx.Path(), ctx.Method())
 
-                tHandler, ok := t.tHandlers[string(ctx.Path())]
+                // if option okOptions is set on the transporter then respond 200 to all
+                // option request
+                if t.okOptions == true &amp;&amp; method == fasthttp.MethodOptions </span><span class="cov8" title="1">{
+                        ctx.SetStatusCode(200)
+                        ctx.SetConnectionClose()
+                        return
+                }</span>
+
+                <span class="cov8" title="1">key := httpRoute{
+                        route:  string(ctx.Path()),
+                        method: method,
+                }
+
+                tHandler, ok := t.routeHandlers[key]
 
                 // if handler not found for path then response with status code 404 is sent
                 if ok == false </span><span class="cov8" title="1">{
@@ -163,16 +352,38 @@ func (t *Transporter) Close() (err error) <span class="cov8" title="1">{
 
 // Handle add handler for specified route
 func (t *Transporter) Handle(route string, tHandler nanux.THandler) error <span class="cov8" title="1">{
-        if _, ok := t.tHandlers[route]; ok == true </span><span class="cov8" title="1">{
-                errMsg := "An handler is already associated to this route"
+        methodsI, ok := tHandler.Opts[MethodsOpt]
+
+        if ok == false </span><span class="cov8" title="1">{
+                errMsg := fmt.Sprintf("Missing http method for route : %s", route)
                 log.Error().Msg(errMsg)
 
                 return errors.New(errMsg)
         }</span>
 
-        <span class="cov8" title="1">t.tHandlers[route] = tHandler
+        <span class="cov8" title="1">methods, ok := methodsI.(Methods)
 
-        return nil</span>
+        if ok == false </span><span class="cov8" title="1">{
+                errMsg := "Option associated to thttp.MethodsOpt is not of type thttp.Methods"
+                log.Error().Msg(errMsg)
+
+                return errors.New(errMsg)
+        }</span>
+
+        <span class="cov8" title="1">httpRoutes := methods.getHTTPRoutes(route)
+
+        for _, httpRoute := range httpRoutes </span><span class="cov8" title="1">{
+                if _, ok := t.routeHandlers[httpRoute]; ok == true </span><span class="cov8" title="1">{
+                        errMsg := "An handler is already associated to this route"
+                        log.Error().Msg(errMsg)
+
+                        return errors.New(errMsg)
+                }</span>
+
+                <span class="cov8" title="1">t.routeHandlers[httpRoute] = tHandler</span>
+        }
+
+        <span class="cov8" title="1">return nil</span>
 }
 
 // HandleError manage error of a handler
@@ -192,14 +403,46 @@ func (t *Transporter) HandleError(errHandler nanux.ErrorHandler) (err error) <sp
   Instantiation of tHTTP transporter
 \*----------------------------------------------------------------------------*/
 
-// New returns a new instance of http transporter which will listen to the specified url
-func New(url string) Transporter <span class="cov8" title="1">{
+// New returns a new instance of http transporter which will listen to the specified url.
+// The param okOption is a little helper to tell the transporter to respond ok to all
+// options.
+func New(url string, okOptions bool) Transporter <span class="cov8" title="1">{
         return Transporter{
-                url:       url,
-                Server:    &amp;fasthttp.Server{},
-                tHandlers: make(map[string]nanux.THandler),
+                url:           url,
+                Server:        &amp;fasthttp.Server{},
+                routeHandlers: make(map[httpRoute]nanux.THandler),
+                okOptions:     okOptions,
         }
 }</span>
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package thttp
+
+import (
+        "github.com/nanux-io/nanux"
+        "github.com/rs/zerolog/log"
+        "github.com/valyala/fasthttp"
+)
+
+// GetHTTPCtx return the fasthttp request context extract from the nanux request
+func GetHTTPCtx(req nanux.Request) (httpCtx *fasthttp.RequestCtx, ok bool) <span class="cov8" title="1">{
+        httpCtxI, ok := req.M["httpCtx"]
+
+        if ok == false </span><span class="cov8" title="1">{
+                log.Error().Msg("GetHTTPCtx : could not extract http context from request")
+                return
+        }</span>
+
+        <span class="cov8" title="1">httpCtx, ok = httpCtxI.(*fasthttp.RequestCtx)
+
+        if ok == false </span><span class="cov8" title="1">{
+                log.Error().Msg("GetHTTPCtx : could not convert http context to *fasthttp.RequestCtx")
+
+                return
+        }</span>
+
+        <span class="cov8" title="1">return</span>
+}
 </pre>
 		
 		</div>

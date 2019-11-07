@@ -26,6 +26,12 @@ github.com/nanux-io/nanux v0.0.0-20191104135854-c4108b3af326 h1:5Vr2hq9M2SUq3P3R
 github.com/nanux-io/nanux v0.0.0-20191104135854-c4108b3af326/go.mod h1:Kuw3vUf6og4furzyYGRuQ4rsffizk+wK/T6YUyR1iJ8=
 github.com/nanux-io/nanux v0.0.0-20191106134618-5c7fa830454b h1:b3S+JCiEs1+cETQBLKaWO6bdg99grgDtv3t58844XjQ=
 github.com/nanux-io/nanux v0.0.0-20191106134618-5c7fa830454b/go.mod h1:Kuw3vUf6og4furzyYGRuQ4rsffizk+wK/T6YUyR1iJ8=
+github.com/nanux-io/nanux v0.0.0-20191106213533-cfc273c0273d h1:BTU76ceKmq79PgYsIyQCufPSKT2aKObWYRyL3/UmjDc=
+github.com/nanux-io/nanux v0.0.0-20191106213533-cfc273c0273d/go.mod h1:Kuw3vUf6og4furzyYGRuQ4rsffizk+wK/T6YUyR1iJ8=
+github.com/nanux-io/nanux v0.0.0-20191107083337-8289ccd2124e h1:ZynyDV56XhKMUuPNYm6MjGR733G+vEyqwt2dui9+/JI=
+github.com/nanux-io/nanux v0.0.0-20191107083337-8289ccd2124e/go.mod h1:Kuw3vUf6og4furzyYGRuQ4rsffizk+wK/T6YUyR1iJ8=
+github.com/nanux-io/nanux v0.0.0-20191107140937-b47d3271034d h1:AdyvdAXGGYzwBONr1sAKxNQLAur0Qt0jBxAoilSud8Q=
+github.com/nanux-io/nanux v0.0.0-20191107140937-b47d3271034d/go.mod h1:Kuw3vUf6og4furzyYGRuQ4rsffizk+wK/T6YUyR1iJ8=
 github.com/nats-io/go-nats v1.7.2 h1:cJujlwCYR8iMz5ofZSD/p2WLW8FabhkQ2lIEVbSvNSA=
 github.com/nats-io/go-nats v1.7.2/go.mod h1:+t7RHT5ApZebkrQdnn6AhQJmhJJiKAvJUio1PiiCtj0=
 github.com/nats-io/nkeys v0.1.2 h1:6JJydNSjt/lqhfM+ngyaLk9Wa/d3UW/YyEqj8OrDV4w=
