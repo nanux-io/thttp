@@ -100,11 +100,15 @@ func (t *Transporter) Run() (err error) {
 		return
 	}
 
+	log.Info().Msgf("Start listening incoming http request at %s", t.url)
+
 	return t.Server.ListenAndServe(t.url)
 }
 
 // Close the http server
 func (t *Transporter) Close() (err error) {
+	log.Info().Msgf("Http server stop serving current request and stop listening at %s", t.url)
+
 	if err = t.Server.Shutdown(); err != nil {
 		return err
 	}
@@ -158,6 +162,7 @@ func (t *Transporter) HandleError(errHandler nanux.ErrorHandler) (err error) {
 	}
 
 	t.errHandler = errHandler
+
 	return nil
 }
 

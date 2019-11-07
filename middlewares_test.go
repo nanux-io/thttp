@@ -31,6 +31,8 @@ func TestOKOptions(t *testing.T) {
 
 					return &fasthttp.RequestCtx{
 						Request: fasthttp.Request{
+							// normally must not copy headers but here it is just to provide
+							// a fake instance which will simulate the request method
 							Header: h,
 						},
 					}
@@ -52,6 +54,8 @@ func TestOKOptions(t *testing.T) {
 
 					return &fasthttp.RequestCtx{
 						Request: fasthttp.Request{
+							// normally must not copy headers but here it is just to provide
+							// a fake instance which will simulate the request method
 							Header: h,
 						},
 					}
@@ -70,7 +74,6 @@ func TestOKOptions(t *testing.T) {
 			}
 
 			got := OKOptions(tt.args.fn)
-
 			res, err := got(nil, req)
 
 			if err != tt.wantErr {

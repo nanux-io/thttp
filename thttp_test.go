@@ -308,6 +308,7 @@ var _ = Describe("tHTTP transporter", func() {
 
 							httpCtx.SetStatusCode(400)
 							httpCtx.SetBody([]byte(errMsg))
+
 							return nil
 						}
 
