@@ -25,7 +25,7 @@ func OKOptions(fn nanux.HandlerFunc) nanux.HandlerFunc {
 }
 
 // SetApplicationJSON set application json headder
-func etApplicationJSON(fn nanux.HandlerFunc) nanux.HandlerFunc {
+func SetApplicationJSON(fn nanux.HandlerFunc) nanux.HandlerFunc {
 	return func(ctx *interface{}, req nanux.Request) ([]byte, error) {
 		httpCtx, err := GetHTTPCtx(req)
 
